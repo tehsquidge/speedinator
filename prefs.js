@@ -4,9 +4,9 @@ import Adw from 'gi://Adw';
 import {ExtensionPreferences, gettext as _} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
 
-export default class ExamplePreferences extends ExtensionPreferences {
+export default class SpeedinatorPreferences extends ExtensionPreferences {
     fillPreferencesWindow(window) {
-		this._settings = this.getSettings('org.gnome.shell.extensions.moe.liam.speedinator');
+		const settings = this.getSettings();
 
         // Create a preferences page, with a single group
         const page = new Adw.PreferencesPage({
@@ -44,7 +44,6 @@ export default class ExamplePreferences extends ExtensionPreferences {
 			value_pos: Gtk.PositionType.RIGHT
 		});
 
-		
 		hbox.append(label);
 		hbox.append(scale);
 		group.add(hbox);
@@ -53,9 +52,9 @@ export default class ExamplePreferences extends ExtensionPreferences {
 		[0.25, 0.5, 1.0, 2.0].forEach(
 			mark => scale.add_mark(mark, Gtk.PositionType.TOP, "<small>" + mark + "</small>")
 		);
-		scale.set_value(this._settings.get_double("speed"));
+		scale.set_value(settings.get_double("speed"));
 		scale.connect('value-changed', (sw) => {
-			this._settings.set_double("speed", sw.get_value());
+			settings.set_double("speed", sw.get_value());
 		});
     }
 }
