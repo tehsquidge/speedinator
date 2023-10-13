@@ -1,0 +1,9 @@
+{
+  "name": "Speedinator",
+  "description": "Control the speed of gnome-shell animations",
+  "uuid": "speedinator@liam.moe",
+  "shell-version": [
+    "45"
+  ],
+  "settings-schema": "org.gnome.shell.extensions.moe.liam.speedinator"
+}

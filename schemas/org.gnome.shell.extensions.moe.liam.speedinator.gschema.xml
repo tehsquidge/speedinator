@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+	<schema id="org.gnome.shell.extensions.moe.liam.speedinator" path="/org/gnome/shell/extensions/moe/liam/speedinator/">
+		<key type="d" name="speed">
+			<default>0.15</default>
+			<summary>speed</summary>
+			<description/>
+		</key>
+	</schema>
+</schemalist>
