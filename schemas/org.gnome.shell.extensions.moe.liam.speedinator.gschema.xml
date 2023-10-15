@@ -2,7 +2,7 @@
 <schemalist>
 	<schema id="org.gnome.shell.extensions.moe.liam.speedinator" path="/org/gnome/shell/extensions/moe/liam/speedinator/">
 		<key type="d" name="speed">
-			<default>0.15</default>
+			<default>0.5</default>
 			<summary>speed</summary>
 			<description/>
 		</key>
