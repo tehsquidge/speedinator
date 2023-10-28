@@ -49,7 +49,7 @@ export default class SpeedinatorPreferences extends ExtensionPreferences {
 		group.add(hbox);
 		page.add(group);
 
-		[0.25, 0.5, 1.0, 2.0].forEach(
+		[0.25, 0.5, 0.75, 1.0, 2.0].forEach(
 			mark => scale.add_mark(mark, Gtk.PositionType.TOP, "<small>" + mark + "</small>")
 		);
 		scale.set_value(settings.get_double("speed"));
