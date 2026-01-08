@@ -20,6 +20,7 @@ import St from 'gi://St';
 
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as Overview from 'resource:///org/gnome/shell/ui/overview.js';
+import * as OverviewControls from 'resource:///org/gnome/shell/ui/overviewControls.js';
 import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
 
 export default class Speedinator extends Extension {
@@ -59,6 +60,7 @@ export default class Speedinator extends Extension {
             console.log("Toggling overview via Speedinator");
             GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
                 // show apps grid
+                Main.overview._overview.animateToOverview(OverviewControls.ControlsState.APP_GRID);
                 this._stopListening();
                 return GLib.SOURCE_REMOVE;
             });
@@ -72,7 +74,7 @@ export default class Speedinator extends Extension {
     }
 
     _calcListeningWindow() {
-        return 1000;
+        return 250;
     }
 
     _stopListening() {
