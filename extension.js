@@ -65,16 +65,14 @@ export default class Speedinator extends Extension {
                 return GLib.SOURCE_REMOVE;
             });
 
-        } 
+        }
 
-        this._timeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, this._calcListeningWindow(), () => {
+        const gracePeriod = this._settings.get_value('app-grid-grace-period').get_int32();
+
+        this._timeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, gracePeriod, () => {
             this._stopListening();
             return GLib.SOURCE_REMOVE;
         });
-    }
-
-    _calcListeningWindow() {
-        return 250;
     }
 
     _stopListening() {
