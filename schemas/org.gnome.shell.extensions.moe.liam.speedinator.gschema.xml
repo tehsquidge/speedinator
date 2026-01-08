@@ -7,7 +7,7 @@
 			<description/>
 		</key>
 		<key type="i" name="app-grid-grace-period">
-			<default>250</default>
+			<default>100</default>
 			<summary>Grace period</summary>
 			<description>Extra time after opening overview to still switch to app grid</description>
 		</key>
