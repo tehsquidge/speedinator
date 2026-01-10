@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist>
-	<schema id="org.gnome.shell.extensions.moe.liam.speedinator" path="/org/gnome/shell/extensions/moe/liam/speedinator/">
-		<key type="d" name="speed">
-			<default>0.5</default>
-			<summary>Speed</summary>
-			<description/>
-		</key>
-		<key type="i" name="app-grid-grace-period">
-			<default>100</default>
-			<summary>Grace period</summary>
-			<description>Extra time after opening overview to still switch to app grid</description>
-		</key>
-	</schema>
+    <schema id="org.gnome.shell.extensions.moe.liam.speedinator" path="/org/gnome/shell/extensions/moe/liam/speedinator/">
+        <key type="d" name="speed">
+            <default>0.5</default>
+            <summary>Speed</summary>
+            <description>Multiplier for GNOME Shell animation speed. Values &lt;1.0 speed up animations; values &gt;1.0 slow them down.</description>
+        </key>
+        <key type="i" name="app-grid-grace-period">
+            <default>100</default>
+            <summary>Grace period</summary>
+            <description>Extra time after opening overview to still switch to app grid</description>
+        </key>
+    </schema>
 </schemalist>

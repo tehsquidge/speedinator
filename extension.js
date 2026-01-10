@@ -57,7 +57,6 @@ export default class Speedinator extends Extension {
         this._stopListening();
         this._originalToggle = Overview.Overview.prototype.toggle;
         Overview.Overview.prototype.toggle = () => {
-            console.log("Toggling overview via Speedinator");
             GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
                 // show apps grid
                 Main.overview._overview.animateToOverview(OverviewControls.ControlsState.APP_GRID);
