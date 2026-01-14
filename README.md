@@ -1,3 +1,34 @@
-# speedinator
+# Speedinator
 
-For speeding up Gnome Shell animations. This is a reworking of [Impatience](https://github.com/timbertson/gnome-shell-impatience/) but for Gnome 45+.
+Speedinator is a GNOME Shell extension that allows users to adjust the playback speed of system animations. It is a refactored fork of the *Impatience* extension, updated to support **GNOME 45 and later**.
+
+## Features
+
+* **Animation Scaling:** Adjust the global speed of GNOME Shell animations (e.g., Overview transitions, window tiling, and app grid movements).
+* **Granular Presets:** Includes various speed multipliers, such as 0.75x for subtle acceleration.
+* **ESM Compatibility:** Fully compliant with the ECMAScript Modules (ESM) architecture required by modern GNOME versions.
+
+## Installation
+
+### Via GNOME Extensions
+The most stable version is available on the [GNOME Extensions website](https://extensions.gnome.org/extension/6397/speedinator/).
+
+### Manual Installation
+1. Clone the repository:
+   ```bash
+   git clone git@github.com:tehsquidge/speedinator.git
+2. Move the extension directory to the local extensions folder:
+    ```
+    mkdir -p ~/.local/share/gnome-shell/extensions/
+    cp -r speedinator ~/.local/share/gnome-shell/extensions/speedinator@liam.moe
+
+    Restart the GNOME Shell (Log out and log back in, or use Alt+F2 > r > Enter on X11).
+
+    Enable the extension via GNOME Extensions or Extension Manager.
+
+### Configuration
+
+Options can be accessed through the extension's settings:
+  1. Open the Extensions app.
+  2. Navigate to Speedinator.
+  3. Select the preferred animation speed.
