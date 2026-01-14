@@ -1,6 +1,6 @@
 # Speedinator
 
-Speedinator is a GNOME Shell extension that allows users to adjust the playback speed of system animations. It is a refactored fork of the *Impatience* extension, updated to support **GNOME 45 and later**.
+Speedinator is a GNOME Shell extension that allows users to adjust the speed of system animations. It is a refactored fork of the *Impatience* extension, updated to support **GNOME 45 and later**.
 
 ## Features
 
