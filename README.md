@@ -4,7 +4,8 @@ Speedinator is a GNOME Shell extension that allows users to adjust the speed of 
 
 ## Features
 
-* **Animation Scaling:** Adjust the global speed of GNOME Shell animations (e.g., Overview transitions, window tiling, and app grid movements).
+* **Animation Scaling:** Adjust the global speed of GNOME Shell animations (e.g., Overview transitions, and virtual desktop movements).
+* **Grace Period:** Adjustable grace period in which the app grid can still be activated (#3) to compensate for the lost time caused by speeding up animations.
 * **Granular Presets:** Includes various speed multipliers, such as 0.75x for subtle acceleration.
 * **ESM Compatibility:** Fully compliant with the ECMAScript Modules (ESM) architecture required by modern GNOME versions.
 
