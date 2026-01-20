@@ -15,13 +15,25 @@
  *
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
-import GObject from 'gi://GObject';
-
+import GLib from 'gi://GLib';
 import St from 'gi://St';
+
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import * as Overview from 'resource:///org/gnome/shell/ui/overview.js';
+import * as OverviewControls from 'resource:///org/gnome/shell/ui/overviewControls.js';
 import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
 
 export default class Speedinator extends Extension {
+
+    constructor(metadata) {
+        super(metadata);
+        this._overviewShownId = null;
+        this._originalToggle = null;
+        this._timeoutId = null;
+    }
+
     enable() {
+        this._originalToggle = Overview.Overview.prototype.toggle;
         this._original_speed = St.Settings.get().slow_down_factor;
         this._settings = this.getSettings('org.gnome.shell.extensions.moe.liam.speedinator');
         St.Settings.get().slow_down_factor = this._original_speed * this._settings.get_value('speed').get_double();
@@ -29,10 +41,44 @@ export default class Speedinator extends Extension {
             const mod = settings.get_value(key).get_double();
             St.Settings.get().slow_down_factor = this._original_speed * mod
         });
+
+        this._overviewShownId = Main.overview.connect('shown', this._onOverviewShown.bind(this));
     }
 
     disable() {
         this._settings = null;
+        Main.overview.disconnect(this._overviewShownId);
+        this._stopListening();
         St.Settings.get().slow_down_factor = this._original_speed;
+    }
+
+    _onOverviewShown() {
+
+        this._stopListening();
+        this._originalToggle = Overview.Overview.prototype.toggle;
+        Overview.Overview.prototype.toggle = () => {
+            GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+                // show apps grid
+                Main.overview._overview.animateToOverview(OverviewControls.ControlsState.APP_GRID);
+                this._stopListening();
+                return GLib.SOURCE_REMOVE;
+            });
+
+        }
+
+        const gracePeriod = this._settings.get_value('app-grid-grace-period').get_int32();
+
+        this._timeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, gracePeriod, () => {
+            this._stopListening();
+            return GLib.SOURCE_REMOVE;
+        });
+    }
+
+    _stopListening() {
+        if (this._timeoutId) {
+            GLib.source_remove(this._timeoutId);
+            this._timeoutId = null;
+        }
+        Overview.Overview.prototype.toggle = this._originalToggle;
     }
 }
