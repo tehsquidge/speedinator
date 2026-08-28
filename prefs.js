@@ -1,6 +1,7 @@
 import Gtk from 'gi://Gtk';
 import Adw from 'gi://Adw';
 import Gio from 'gi://Gio';
+import St from 'gi://St';
 import {
     ExtensionPreferences,
     gettext as _
@@ -9,6 +10,8 @@ import {
 export default class SpeedinatorPreferences extends ExtensionPreferences {
     fillPreferencesWindow(window) {
         const settings = this.getSettings();
+        const stSettings = St.Settings.get();
+        const isReduceMotion = 'reducedMotion' in stSettings && stSettings.reducedMotion === St.ReducedMotion.REDUCE;
 
         const page = new Adw.PreferencesPage({
             title: _('General'),
@@ -21,6 +24,17 @@ export default class SpeedinatorPreferences extends ExtensionPreferences {
             description: _('Configure the extension behaviour')
         });
         page.add(group);
+
+        if (isReduceMotion) {
+            const warningRow = new Adw.ActionRow({
+                title: _('Reduced Motion Enabled'),
+                subtitle: _('Animation controls are disabled while GNOME\'s Reduced Motion preference is active.')
+            });
+            warningRow.add_suffix(new Gtk.Image({
+                icon_name: 'dialog-warning-symbolic',
+            }));
+            group.add(warningRow);
+        }
 
         const speedRow = new Adw.ActionRow({
             title: _('Speed'),
@@ -41,12 +55,12 @@ export default class SpeedinatorPreferences extends ExtensionPreferences {
             value_pos: Gtk.PositionType.RIGHT
         });
 
-        [0.25, 0.5, 0.75, 1.0, 1.5, 2.0].forEach(m => 
+        [0.25, 0.5, 0.75, 1.0, 1.5, 2.0].forEach(m =>
             speedScale.add_mark(m, Gtk.PositionType.TOP, null)
         );
 
         settings.bind('speed', speedScale.get_adjustment(), 'value', Gio.SettingsBindFlags.DEFAULT);
-        
+
         speedRow.add_suffix(speedScale);
         group.add(speedRow);
 
@@ -62,7 +76,7 @@ export default class SpeedinatorPreferences extends ExtensionPreferences {
         });
 
         settings.bind('app-grid-grace-period', graceRow, 'value', Gio.SettingsBindFlags.DEFAULT);
-        
+
         group.add(graceRow);
     }
 }
