@@ -22,7 +22,6 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as Overview from 'resource:///org/gnome/shell/ui/overview.js';
 import * as OverviewControls from 'resource:///org/gnome/shell/ui/overviewControls.js';
 import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
-
 export default class Speedinator extends Extension {
 
     #overviewShownId = null;
@@ -30,46 +29,81 @@ export default class Speedinator extends Extension {
     #originalSpeed = null;
     #timeoutId = null;
     #settings = null;
+    #stSettings = null;
 
     constructor(metadata) {
         super(metadata);
     }
 
     enable() {
+        this.#stSettings = St.Settings.get();
         this.#originalToggle = Overview.Overview.prototype.toggle;
-        this.#originalSpeed = St.Settings.get().slow_down_factor;
+        this.#originalSpeed = this.#stSettings.slow_down_factor;
         this.#settings = this.getSettings('org.gnome.shell.extensions.moe.liam.speedinator');
-        St.Settings.get().slow_down_factor = this.#originalSpeed * this.#settings.get_value('speed').get_double();
-        this.#settings.connect('changed::speed', (settings, key) => {
-            const mod = settings.get_value(key).get_double();
-            St.Settings.get().slow_down_factor = this.#originalSpeed * mod;
+
+        this.#settings.connect('changed::speed', () => {
+            this.#updateSpeed();
         });
+
+        if(this.#canReduceMotion()){
+            this.#stSettings.connect('changed::reducedMotion', () => {
+                this.#updateSpeed();
+            });
+        }
+
+        this.#updateSpeed();
 
         this.#overviewShownId = Main.overview.connect('shown', this.#onOverviewShown.bind(this));
     }
 
     disable() {
-        this.#settings = null;
         Main.overview.disconnect(this.#overviewShownId);
         this.#stopListening();
-        St.Settings.get().slow_down_factor = this.#originalSpeed;
+
+        if (this.#stSettings) {
+            this.#stSettings.slow_down_factor = this.#originalSpeed;
+        }
+
+        this.#settings = null;
+        this.#stSettings = null;
+        this.#overviewShownId = null;
+        this.#originalToggle = null;
+        this.#originalSpeed = null;
+        this.#timeoutId = null;
+    }
+
+    #updateSpeed() {
+        const reduced = this.#canReduceMotion() && this.#stSettings.reducedMotion === St.ReducedMotion.REDUCE;
+        if(reduced) {
+            this.#stSettings.slow_down_factor = this.#originalSpeed;
+        } else {
+            const mod = this.#settings.get_double('speed');
+            this.#stSettings.slow_down_factor = this.#originalSpeed * mod;
+        }
+    }
+
+    #canReduceMotion() {
+        return this.#stSettings && 'reducedMotion' in this.#stSettings;
     }
 
     #onOverviewShown() {
+        const reduced = this.#canReduceMotion() && this.#stSettings.reducedMotion === St.ReducedMotion.REDUCE;
+        if(reduced) {
+            this.#stopListening();
+            return;
+        }
 
         this.#stopListening();
         this.#originalToggle = Overview.Overview.prototype.toggle;
         Overview.Overview.prototype.toggle = () => {
             GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                // show apps grid
                 Main.overview._overview.animateToOverview(OverviewControls.ControlsState.APP_GRID);
                 this.#stopListening();
                 return GLib.SOURCE_REMOVE;
             });
+        };
 
-        }
-
-        const gracePeriod = this.#settings.get_value('app-grid-grace-period').get_int32();
+        const gracePeriod = this.#settings.get_int('app-grid-grace-period');
 
         this.#timeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, gracePeriod, () => {
             this.#stopListening();
