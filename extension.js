@@ -45,25 +45,25 @@ export default class Speedinator extends Extension {
             St.Settings.get().slow_down_factor = this.#originalSpeed * mod;
         });
 
-        this.#overviewShownId = Main.overview.connect('shown', this._onOverviewShown.bind(this));
+        this.#overviewShownId = Main.overview.connect('shown', this.#onOverviewShown.bind(this));
     }
 
     disable() {
         this.#settings = null;
         Main.overview.disconnect(this.#overviewShownId);
-        this._stopListening();
+        this.#stopListening();
         St.Settings.get().slow_down_factor = this.#originalSpeed;
     }
 
-    _onOverviewShown() {
+    #onOverviewShown() {
 
-        this._stopListening();
+        this.#stopListening();
         this.#originalToggle = Overview.Overview.prototype.toggle;
         Overview.Overview.prototype.toggle = () => {
             GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
                 // show apps grid
                 Main.overview._overview.animateToOverview(OverviewControls.ControlsState.APP_GRID);
-                this._stopListening();
+                this.#stopListening();
                 return GLib.SOURCE_REMOVE;
             });
 
@@ -72,12 +72,12 @@ export default class Speedinator extends Extension {
         const gracePeriod = this.#settings.get_value('app-grid-grace-period').get_int32();
 
         this.#timeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, gracePeriod, () => {
-            this._stopListening();
+            this.#stopListening();
             return GLib.SOURCE_REMOVE;
         });
     }
 
-    _stopListening() {
+    #stopListening() {
         if (this.#timeoutId) {
             GLib.source_remove(this.#timeoutId);
             this.#timeoutId = null;
