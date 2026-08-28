@@ -25,37 +25,40 @@ import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/ex
 
 export default class Speedinator extends Extension {
 
+    #overviewShownId = null;
+    #originalToggle = null;
+    #originalSpeed = null;
+    #timeoutId = null;
+    #settings = null;
+
     constructor(metadata) {
         super(metadata);
-        this._overviewShownId = null;
-        this._originalToggle = null;
-        this._timeoutId = null;
     }
 
     enable() {
-        this._originalToggle = Overview.Overview.prototype.toggle;
-        this._original_speed = St.Settings.get().slow_down_factor;
-        this._settings = this.getSettings('org.gnome.shell.extensions.moe.liam.speedinator');
-        St.Settings.get().slow_down_factor = this._original_speed * this._settings.get_value('speed').get_double();
-        this._settings.connect('changed::speed', (settings, key) => {
+        this.#originalToggle = Overview.Overview.prototype.toggle;
+        this.#originalSpeed = St.Settings.get().slow_down_factor;
+        this.#settings = this.getSettings('org.gnome.shell.extensions.moe.liam.speedinator');
+        St.Settings.get().slow_down_factor = this.#originalSpeed * this.#settings.get_value('speed').get_double();
+        this.#settings.connect('changed::speed', (settings, key) => {
             const mod = settings.get_value(key).get_double();
-            St.Settings.get().slow_down_factor = this._original_speed * mod
+            St.Settings.get().slow_down_factor = this.#originalSpeed * mod;
         });
 
-        this._overviewShownId = Main.overview.connect('shown', this._onOverviewShown.bind(this));
+        this.#overviewShownId = Main.overview.connect('shown', this._onOverviewShown.bind(this));
     }
 
     disable() {
-        this._settings = null;
-        Main.overview.disconnect(this._overviewShownId);
+        this.#settings = null;
+        Main.overview.disconnect(this.#overviewShownId);
         this._stopListening();
-        St.Settings.get().slow_down_factor = this._original_speed;
+        St.Settings.get().slow_down_factor = this.#originalSpeed;
     }
 
     _onOverviewShown() {
 
         this._stopListening();
-        this._originalToggle = Overview.Overview.prototype.toggle;
+        this.#originalToggle = Overview.Overview.prototype.toggle;
         Overview.Overview.prototype.toggle = () => {
             GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
                 // show apps grid
@@ -66,19 +69,19 @@ export default class Speedinator extends Extension {
 
         }
 
-        const gracePeriod = this._settings.get_value('app-grid-grace-period').get_int32();
+        const gracePeriod = this.#settings.get_value('app-grid-grace-period').get_int32();
 
-        this._timeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, gracePeriod, () => {
+        this.#timeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, gracePeriod, () => {
             this._stopListening();
             return GLib.SOURCE_REMOVE;
         });
     }
 
     _stopListening() {
-        if (this._timeoutId) {
-            GLib.source_remove(this._timeoutId);
-            this._timeoutId = null;
+        if (this.#timeoutId) {
+            GLib.source_remove(this.#timeoutId);
+            this.#timeoutId = null;
         }
-        Overview.Overview.prototype.toggle = this._originalToggle;
+        Overview.Overview.prototype.toggle = this.#originalToggle;
     }
 }
