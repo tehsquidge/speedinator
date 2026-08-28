@@ -68,10 +68,7 @@ export default class Speedinator extends Extension {
 
         this.#stopListening();
 
-        if (this.#stSettings) {
-            this.#stSettings.slow_down_factor = this.#originalSpeed;
-        }
-
+        this.#stSettings.slow_down_factor = this.#originalSpeed;
         this.#settings = null;
         this.#stSettings = null;
         this.#overviewShownId = null;
@@ -91,7 +88,7 @@ export default class Speedinator extends Extension {
     }
 
     #canReduceMotion() {
-        return this.#stSettings && 'reducedMotion' in this.#stSettings;
+        return 'reducedMotion' in this.#stSettings;
     }
 
     #onOverviewShown() {
