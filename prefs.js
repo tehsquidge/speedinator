@@ -18,7 +18,7 @@ export default class SpeedinatorPreferences extends ExtensionPreferences {
 
         const group = new Adw.PreferencesGroup({
             title: _('Behaviour'),
-            description: _('Configure the extension behavior')
+            description: _('Configure the extension behaviour')
         });
         page.add(group);
 
