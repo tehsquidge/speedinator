@@ -1,7 +1,6 @@
 import Gtk from 'gi://Gtk';
 import Adw from 'gi://Adw';
 import Gio from 'gi://Gio';
-import St from 'gi://St';
 import {
     ExtensionPreferences,
     gettext as _
@@ -10,8 +9,11 @@ import {
 export default class SpeedinatorPreferences extends ExtensionPreferences {
     fillPreferencesWindow(window) {
         const settings = this.getSettings();
-        const stSettings = St.Settings.get();
-        const isReduceMotion = 'reducedMotion' in stSettings && stSettings.reducedMotion === St.ReducedMotion.REDUCE;
+        const interfaceSettings = new Gio.Settings({ schema_id: 'org.gnome.desktop.interface' });
+
+        const checkReduceMotion = () => {
+            return !interfaceSettings.get_boolean('enable-animations');
+        };
 
         const page = new Adw.PreferencesPage({
             title: _('General'),
@@ -25,20 +27,21 @@ export default class SpeedinatorPreferences extends ExtensionPreferences {
         });
         page.add(group);
 
-        if (isReduceMotion) {
-            const warningRow = new Adw.ActionRow({
-                title: _('Reduced Motion Enabled'),
-                subtitle: _('Animation controls are disabled while GNOME\'s Reduced Motion preference is active.')
-            });
-            warningRow.add_suffix(new Gtk.Image({
-                icon_name: 'dialog-warning-symbolic',
-            }));
-            group.add(warningRow);
-        }
+        const warningRow = new Adw.ActionRow({
+            title: _('Reduced Motion Enabled'),
+            subtitle: _('Animation controls are disabled while GNOME\'s Reduced Motion preference is active.'),
+            visible: checkReduceMotion()
+        });
+
+        warningRow.add_suffix(new Gtk.Image({
+            icon_name: 'dialog-warning-symbolic',
+        }));
+        group.add(warningRow);
 
         const speedRow = new Adw.ActionRow({
             title: _('Speed'),
             subtitle: _('1 = normal, 0.5 = twice as fast'),
+            sensitive: !checkReduceMotion()
         });
 
         const speedScale = new Gtk.Scale({
@@ -72,11 +75,23 @@ export default class SpeedinatorPreferences extends ExtensionPreferences {
                 upper: 10000,
                 step_increment: 50,
                 page_increment: 500
-            })
+            }),
+            sensitive: !checkReduceMotion()
         });
 
         settings.bind('app-grid-grace-period', graceRow, 'value', Gio.SettingsBindFlags.DEFAULT);
 
         group.add(graceRow);
+
+        const reducedMotionId = interfaceSettings.connect('changed::enable-animations', () => {
+            const reduced = checkReduceMotion();
+            warningRow.visible = reduced;
+            speedRow.sensitive = !reduced;
+            graceRow.sensitive = !reduced;
+        });
+
+        window.connect('close-request', () => {
+            interfaceSettings.disconnect(reducedMotionId);
+        });
     }
 }
