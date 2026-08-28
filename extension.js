@@ -42,7 +42,7 @@ export default class Speedinator extends Extension {
         this.#stSettings = St.Settings.get();
         this.#originalToggle = Overview.Overview.prototype.toggle;
         this.#originalSpeed = this.#stSettings.slow_down_factor;
-        this.#settings = this.getSettings('org.gnome.shell.extensions.moe.liam.speedinator');
+        this.#settings = this.getSettings();
 
         this.#speedChangeId = this.#settings.connect('changed::speed', () => {
             this.#updateSpeed();
