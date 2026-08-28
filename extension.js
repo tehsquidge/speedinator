@@ -21,15 +21,18 @@ import St from 'gi://St';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as Overview from 'resource:///org/gnome/shell/ui/overview.js';
 import * as OverviewControls from 'resource:///org/gnome/shell/ui/overviewControls.js';
-import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
+import { Extension, gettext as _ } from 'resource:///org/gnome/shell/extensions/extension.js';
 export default class Speedinator extends Extension {
 
-    #overviewShownId = null;
     #originalToggle = null;
     #originalSpeed = null;
-    #timeoutId = null;
     #settings = null;
     #stSettings = null;
+
+    #timeoutId = null;
+    #overviewShownId = null;
+    #speedChangeId = null;
+    #motionChangedId = null;
 
     constructor(metadata) {
         super(metadata);
@@ -41,12 +44,12 @@ export default class Speedinator extends Extension {
         this.#originalSpeed = this.#stSettings.slow_down_factor;
         this.#settings = this.getSettings('org.gnome.shell.extensions.moe.liam.speedinator');
 
-        this.#settings.connect('changed::speed', () => {
+        this.#speedChangeId = this.#settings.connect('changed::speed', () => {
             this.#updateSpeed();
         });
 
-        if(this.#canReduceMotion()){
-            this.#stSettings.connect('changed::reducedMotion', () => {
+        if (this.#canReduceMotion()) {
+            this.#motionChangedId = this.#stSettings.connect('changed::reducedMotion', () => {
                 this.#updateSpeed();
             });
         }
@@ -58,6 +61,11 @@ export default class Speedinator extends Extension {
 
     disable() {
         Main.overview.disconnect(this.#overviewShownId);
+        this.#settings.disconnect(this.#speedChangeId);
+        if (this.#motionChangedId) {
+            this.#stSettings.disconnect(this.#motionChangedId);
+        }
+
         this.#stopListening();
 
         if (this.#stSettings) {
@@ -74,7 +82,7 @@ export default class Speedinator extends Extension {
 
     #updateSpeed() {
         const reduced = this.#canReduceMotion() && this.#stSettings.reducedMotion === St.ReducedMotion.REDUCE;
-        if(reduced) {
+        if (reduced) {
             this.#stSettings.slow_down_factor = this.#originalSpeed;
         } else {
             const mod = this.#settings.get_double('speed');
@@ -88,13 +96,12 @@ export default class Speedinator extends Extension {
 
     #onOverviewShown() {
         const reduced = this.#canReduceMotion() && this.#stSettings.reducedMotion === St.ReducedMotion.REDUCE;
-        if(reduced) {
+        if (reduced) {
             this.#stopListening();
             return;
         }
 
         this.#stopListening();
-        this.#originalToggle = Overview.Overview.prototype.toggle;
         Overview.Overview.prototype.toggle = () => {
             GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
                 Main.overview._overview.animateToOverview(OverviewControls.ControlsState.APP_GRID);
