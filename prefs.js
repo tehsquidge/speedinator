@@ -9,11 +9,7 @@ import {
 export default class SpeedinatorPreferences extends ExtensionPreferences {
     fillPreferencesWindow(window) {
         const settings = this.getSettings();
-        const interfaceSettings = new Gio.Settings({ schema_id: 'org.gnome.desktop.interface' });
-
-        const checkReduceMotion = () => {
-            return !interfaceSettings.get_boolean('enable-animations');
-        };
+        const a11ySettings = new Gio.Settings({ schema_id: 'org.gnome.desktop.a11y.interface' });
 
         const page = new Adw.PreferencesPage({
             title: _('General'),
@@ -29,8 +25,7 @@ export default class SpeedinatorPreferences extends ExtensionPreferences {
 
         const warningRow = new Adw.ActionRow({
             title: _('Reduced Motion Enabled'),
-            subtitle: _('Animation controls are disabled while GNOME\'s Reduced Motion preference is active.'),
-            visible: checkReduceMotion()
+            subtitle: _('Animation controls are disabled while GNOME\'s Reduced Motion preference is active.')
         });
 
         warningRow.add_suffix(new Gtk.Image({
@@ -40,8 +35,7 @@ export default class SpeedinatorPreferences extends ExtensionPreferences {
 
         const speedRow = new Adw.ActionRow({
             title: _('Speed'),
-            subtitle: _('1 = normal, 0.5 = twice as fast'),
-            sensitive: !checkReduceMotion()
+            subtitle: _('1 = normal, 0.5 = twice as fast')
         });
 
         const speedScale = new Gtk.Scale({
@@ -75,20 +69,23 @@ export default class SpeedinatorPreferences extends ExtensionPreferences {
                 upper: 10000,
                 step_increment: 50,
                 page_increment: 500
-            }),
-            sensitive: !checkReduceMotion()
+            })
         });
 
         settings.bind('app-grid-grace-period', graceRow, 'value', Gio.SettingsBindFlags.DEFAULT);
 
         group.add(graceRow);
 
-        const reducedMotionId = interfaceSettings.connect('changed::enable-animations', () => {
-            const reduced = checkReduceMotion();
+        const toggleReducedMotion = () => {
+            const reduced = a11ySettings.get_string('reduced-motion') === 'reduce';
             warningRow.visible = reduced;
             speedRow.sensitive = !reduced;
             graceRow.sensitive = !reduced;
-        });
+        }
+
+        toggleReducedMotion();
+
+        const reducedMotionId = a11ySettings.connect('changed::reduced-motion', toggleReducedMotion);
 
         window.connect('close-request', () => {
             interfaceSettings.disconnect(reducedMotionId);
