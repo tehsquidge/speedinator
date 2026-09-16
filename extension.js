@@ -33,6 +33,7 @@ export default class Speedinator extends Extension {
     #overviewShownId = null;
     #speedChangeId = null;
     #motionChangedId = null;
+    #appGridCallbackId = null;
 
     constructor(metadata) {
         super(metadata);
@@ -100,7 +101,7 @@ export default class Speedinator extends Extension {
 
         this.#stopListening();
         Overview.Overview.prototype.toggle = () => {
-            GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+            this.#appGridCallbackId = GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
                 Main.overview._overview.animateToOverview(OverviewControls.ControlsState.APP_GRID);
                 this.#stopListening();
                 return GLib.SOURCE_REMOVE;
@@ -119,6 +120,10 @@ export default class Speedinator extends Extension {
         if (this.#timeoutId) {
             GLib.source_remove(this.#timeoutId);
             this.#timeoutId = null;
+        }
+        if (this.#appGridCallbackId) {
+            GLib.source_remove(this.#appGridCallbackId);
+            this.#appGridCallbackId = null;
         }
         Overview.Overview.prototype.toggle = this.#originalToggle;
     }
