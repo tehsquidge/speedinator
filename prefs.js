@@ -107,7 +107,7 @@ export default class SpeedinatorPreferences extends ExtensionPreferences {
     );
 
     window.connect("close-request", () => {
-      interfaceSettings.disconnect(reducedMotionId);
+      a11ySettings.disconnect(reducedMotionId);
     });
   }
 }
