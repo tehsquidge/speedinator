@@ -50,7 +50,7 @@ export default class Speedinator extends Extension {
         });
 
         if (this.#canReduceMotion()) {
-            this.#motionChangedId = this.#stSettings.connect('notify::reduce-motion', () => {
+            this.#motionChangedId = this.#stSettings.connect('notify::reduced-motion', () => {
                 this.#updateSpeed();
             });
         }
