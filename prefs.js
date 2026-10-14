@@ -92,8 +92,22 @@ export default class SpeedinatorPreferences extends ExtensionPreferences {
 
     group.add(graceRow);
 
+    const hasReducedMotionKey =
+      a11ySettings.settings_schema.has_key("reduced-motion");
+    const animationSettings = new Gio.Settings({
+      schema_id: "org.gnome.desktop.interface",
+    });
+    const motionSettings = hasReducedMotionKey
+      ? a11ySettings
+      : animationSettings;
+    const motionSignal = hasReducedMotionKey
+      ? "changed::reduced-motion"
+      : "changed::enable-animations";
+
     const toggleReducedMotion = () => {
-      const reduced = a11ySettings.get_string("reduced-motion") === "reduce";
+      const reduced = hasReducedMotionKey
+        ? a11ySettings.get_string("reduced-motion") === "reduce"
+        : !animationSettings.get_boolean("enable-animations");
       warningRow.visible = reduced;
       speedRow.sensitive = !reduced;
       graceRow.sensitive = !reduced;
@@ -101,13 +115,13 @@ export default class SpeedinatorPreferences extends ExtensionPreferences {
 
     toggleReducedMotion();
 
-    const reducedMotionId = a11ySettings.connect(
-      "changed::reduced-motion",
+    const reducedMotionId = motionSettings.connect(
+      motionSignal,
       toggleReducedMotion,
     );
 
     window.connect("close-request", () => {
-      a11ySettings.disconnect(reducedMotionId);
+      motionSettings.disconnect(reducedMotionId);
     });
   }
 }
